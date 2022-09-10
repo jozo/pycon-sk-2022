@@ -1,0 +1,10 @@
+FROM debian
+
+COPY [".", "/app"]
+RUN apt-get update && apt-get install -y python3 python3-pip python3-dev libpq-dev
+RUN cd /app && pip install -r requirements.txt
+
+RUN apt-get install -y nodejs npm
+RUN cd /app/react-app && npm install && npm run build
+
+CMD ["gunicorn", "--workers=2", "--bind=0.0.0.0", "django_app.wsgi"]

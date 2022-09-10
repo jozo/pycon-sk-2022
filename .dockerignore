@@ -1,0 +1,4 @@
+react-app/node_modules/
+react-app/build/
+
+Dockerfile*

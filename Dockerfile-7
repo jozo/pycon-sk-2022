@@ -1,0 +1,24 @@
+FROM node:18-bullseye-slim AS js-builder
+
+COPY ["react-app/", "/app"]
+
+RUN cd /app && npm install && npm run build
+
+FROM python:3-slim AS py-builder
+
+COPY ["requirements.txt", "."]
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential libpq-dev \
+    && pip wheel --no-cache-dir --no-deps --wheel-dir /opt/wheels -r requirements.txt
+
+
+FROM python:3-slim
+
+COPY --from=js-builder ["/app/build/", "/app/"]
+COPY --from=py-builder ["/opt/wheels", "/opt/wheels"]
+COPY [".", "/app"]
+
+RUN pip install --no-cache /opt/wheels/*
+
+CMD ["gunicorn", "--workers=2", "--bind=0.0.0.0", "django_app.wsgi"]

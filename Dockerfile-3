@@ -1,0 +1,10 @@
+FROM python:3-slim
+
+COPY [".", "/app"]
+
+RUN apt-get update && apt-get install -y \
+    libpq-dev nodejs npm \
+    && cd /app && pip install -r requirements.txt \
+    && cd /app/react-app && npm install && npm run build
+
+CMD ["gunicorn", "--workers=2", "--bind=0.0.0.0", "django_app.wsgi"]
